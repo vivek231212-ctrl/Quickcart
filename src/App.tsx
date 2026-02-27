@@ -485,7 +485,7 @@ export default function App() {
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
       const cartItems = cart.map(item => item.name).join(', ');
       const response = await ai.models.generateContent({
-        model: "gemini-2.0-flash-exp",
+        model: "gemini-3-flash-preview",
         contents: `Based on these grocery items in the cart: [${cartItems}], suggest 3 complementary items that a user might want to buy. Return only a comma-separated list of item names.`,
       });
       const suggestions = response.text?.split(',').map(s => s.trim()) || [];
