@@ -91,6 +91,12 @@ async function startServer() {
     res.json({ success: true, orderId });
   });
 
+  app.get("/api/orders/user/:userId", (req, res) => {
+    const userId = req.params.userId;
+    const orders = db.prepare("SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC").all(userId);
+    res.json(orders);
+  });
+
   app.post("/api/register", (req, res) => {
     const { email, password, name } = req.body;
     try {
