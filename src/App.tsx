@@ -44,20 +44,151 @@ interface CartItem extends Product {
   quantity: number;
 }
 
+interface UserData {
+  id: number;
+  email: string;
+  name: string;
+}
+
 // --- Components ---
+
+const AuthPage = ({ onAuthSuccess }: { onAuthSuccess: (user: UserData) => void }) => {
+  const navigate = useNavigate();
+  const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    const endpoint = isLogin ? '/api/login' : '/api/register';
+    const body = isLogin ? { email, password } : { email, password, name };
+
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        onAuthSuccess(data.user);
+        navigate('/');
+      } else {
+        setError(data.message || 'Authentication failed');
+      }
+    } catch (err) {
+      setError('Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-[calc(100vh-80px)] flex items-center justify-center px-4 py-12 bg-gray-50">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-md w-full bg-white rounded-3xl shadow-xl border border-gray-100 p-8"
+      >
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-black mb-2">{isLogin ? 'Welcome Back' : 'Create Account'}</h2>
+          <p className="text-gray-500 text-sm">
+            {isLogin ? 'Login to your account to continue shopping' : 'Join FreshCart for the fastest grocery delivery'}
+          </p>
+        </div>
+
+        {error && (
+          <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm font-bold mb-6 border border-red-100">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {!isLogin && (
+            <div>
+              <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-1 ml-1">Full Name</label>
+              <input 
+                type="text" 
+                required 
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full bg-gray-50 border-none rounded-xl py-3 px-4 focus:ring-2 focus:ring-[#0C831F]/20 outline-none font-medium"
+                placeholder="John Doe"
+              />
+            </div>
+          )}
+          <div>
+            <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-1 ml-1">Email Address</label>
+            <input 
+              type="email" 
+              required 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full bg-gray-50 border-none rounded-xl py-3 px-4 focus:ring-2 focus:ring-[#0C831F]/20 outline-none font-medium"
+              placeholder="name@example.com"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-1 ml-1">Password</label>
+            <input 
+              type="password" 
+              required 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full bg-gray-50 border-none rounded-xl py-3 px-4 focus:ring-2 focus:ring-[#0C831F]/20 outline-none font-medium"
+              placeholder="••••••••"
+            />
+          </div>
+
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="w-full bg-[#0C831F] text-white py-4 rounded-2xl font-black mt-4 shadow-xl shadow-[#0C831F]/20 hover:bg-[#096b19] transition-all disabled:opacity-50 flex items-center justify-center"
+          >
+            {loading ? (
+              <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              isLogin ? 'Login' : 'Sign Up'
+            )}
+          </button>
+        </form>
+
+        <div className="mt-8 text-center">
+          <button 
+            onClick={() => setIsLogin(!isLogin)}
+            className="text-sm font-bold text-[#0C831F] hover:underline"
+          >
+            {isLogin ? "Don't have an account? Sign Up" : "Already have an account? Login"}
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
 
 const Header = ({ 
   cartCount, 
   cartTotal, 
   onCartClick, 
   searchQuery, 
-  setSearchQuery 
+  setSearchQuery,
+  user,
+  onLogout
 }: { 
   cartCount: number, 
   cartTotal: number, 
   onCartClick: () => void,
   searchQuery: string,
-  setSearchQuery: (q: string) => void
+  setSearchQuery: (q: string) => void,
+  user: UserData | null,
+  onLogout: () => void
 }) => (
   <header className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
     <div className="max-w-7xl mx-auto px-4 h-20 flex items-center gap-8">
@@ -87,10 +218,26 @@ const Header = ({
       </div>
 
       <div className="flex items-center gap-6">
-        <button className="hidden lg:flex items-center gap-2 font-bold text-sm hover:text-[#0C831F]">
-          <User size={20} />
-          Login
-        </button>
+        {user ? (
+          <div className="hidden lg:flex items-center gap-4">
+            <div className="flex flex-col items-end">
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Welcome</span>
+              <span className="font-bold text-sm">{user.name}</span>
+            </div>
+            <button 
+              onClick={onLogout}
+              className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-red-500 transition-colors"
+              title="Logout"
+            >
+              <User size={20} />
+            </button>
+          </div>
+        ) : (
+          <Link to="/auth" className="hidden lg:flex items-center gap-2 font-bold text-sm hover:text-[#0C831F]">
+            <User size={20} />
+            Login
+          </Link>
+        )}
         <button 
           onClick={onCartClick}
           className="bg-[#0C831F] text-white px-4 py-2.5 rounded-xl flex items-center gap-3 font-bold shadow-lg shadow-[#0C831F]/20 hover:bg-[#096b19] transition-colors"
@@ -239,18 +386,24 @@ const HomePage = ({
   );
 };
 
-const CheckoutPage = ({ cart, cartTotal, onOrderSuccess }: any) => {
+const CheckoutPage = ({ cart, cartTotal, onOrderSuccess, user }: any) => {
   const navigate = useNavigate();
   const [paymentMethod, setPaymentMethod] = useState('upi');
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
   const handlePlaceOrder = async () => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+
     setIsPlacingOrder(true);
     try {
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          userId: user.id,
           items: cart,
           total: cartTotal + 2
         })
@@ -455,10 +608,26 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('All');
   const [aiRecommendations, setAiRecommendations] = useState<string[]>([]);
+  const [user, setUser] = useState<UserData | null>(null);
 
   useEffect(() => {
     fetchProducts();
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
   }, []);
+
+  const handleAuthSuccess = (userData: UserData) => {
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('user');
+    navigate('/');
+  };
 
   useEffect(() => {
     if (cart.length > 0) {
@@ -530,6 +699,8 @@ export default function App() {
         onCartClick={() => setIsCartOpen(true)}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
+        user={user}
+        onLogout={handleLogout}
       />
 
       <Routes>
@@ -545,11 +716,13 @@ export default function App() {
             removeFromCart={removeFromCart}
           />
         } />
+        <Route path="/auth" element={<AuthPage onAuthSuccess={handleAuthSuccess} />} />
         <Route path="/checkout" element={
           <CheckoutPage 
             cart={cart} 
             cartTotal={cartTotal} 
             onOrderSuccess={() => setCart([])}
+            user={user}
           />
         } />
         <Route path="/success" element={<SuccessPage />} />

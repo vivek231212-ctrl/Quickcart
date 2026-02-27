@@ -91,6 +91,31 @@ async function startServer() {
     res.json({ success: true, orderId });
   });
 
+  app.post("/api/register", (req, res) => {
+    const { email, password, name } = req.body;
+    try {
+      const info = db.prepare("INSERT INTO users (email, password, name) VALUES (?, ?, ?)").run(email, password, name);
+      const user = db.prepare("SELECT id, email, name FROM users WHERE id = ?").get(info.lastInsertRowid);
+      res.json({ success: true, user });
+    } catch (err: any) {
+      if (err.message.includes("UNIQUE constraint failed")) {
+        res.status(400).json({ success: false, message: "Email already exists" });
+      } else {
+        res.status(500).json({ success: false, message: "Server error" });
+      }
+    }
+  });
+
+  app.post("/api/login", (req, res) => {
+    const { email, password } = req.body;
+    const user = db.prepare("SELECT id, email, name FROM users WHERE email = ? AND password = ?").get(email, password) as any;
+    if (user) {
+      res.json({ success: true, user });
+    } else {
+      res.status(401).json({ success: false, message: "Invalid email or password" });
+    }
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
