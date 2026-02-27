@@ -66,7 +66,8 @@ const AuthPage = ({ onAuthSuccess }: { onAuthSuccess: (user: UserData) => void }
     setError('');
     setLoading(true);
 
-    const endpoint = isLogin ? '/api/login' : '/api/register';
+    const apiUrl = import.meta.env.VITE_API_URL || '';
+    const endpoint = isLogin ? `${apiUrl}/api/login` : `${apiUrl}/api/register`;
     const body = isLogin ? { email, password } : { email, password, name };
 
     try {
@@ -188,7 +189,8 @@ const MyOrdersPage = ({ user }: { user: UserData | null }) => {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch(`/api/orders/user/${user?.id}`);
+      const apiUrl = import.meta.env.VITE_API_URL || '';
+      const res = await fetch(`${apiUrl}/api/orders/user/${user?.id}`);
       const data = await res.json();
       setOrders(data);
     } catch (err) {
@@ -666,7 +668,8 @@ const CheckoutPage = ({ cart, cartTotal, onOrderSuccess, user, address, onChange
 
     setIsPlacingOrder(true);
     try {
-      const res = await fetch('/api/orders', {
+      const apiUrl = import.meta.env.VITE_API_URL || '';
+      const res = await fetch(`${apiUrl}/api/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -908,7 +911,8 @@ export default function App() {
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch('/api/products');
+      const apiUrl = import.meta.env.VITE_API_URL || '';
+      const res = await fetch(`${apiUrl}/api/products`);
       const data = await res.json();
       setProducts(data);
     } catch (err) {
