@@ -1,0 +1,7 @@
+{
+  "name": "FreshCart - Blinkit Style Grocery Delivery",
+  "description": "A high-performance, AI-powered grocery delivery platform with real-time cart management, smart search, and an admin dashboard.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
