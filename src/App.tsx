@@ -23,7 +23,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { GoogleGenAI } from "@google/genai";
-import { Routes, Route, useNavigate, Link } from 'react-router-dom';
+import { Routes, Route, useNavigate, Link, useParams } from 'react-router-dom';
 
 // Utility for tailwind classes
 function cn(...inputs: ClassValue[]) {
@@ -313,6 +313,165 @@ const AccountPrivacyPage = () => (
   </div>
 );
 
+const ProductDetailPage = ({ products, cart, addToCart, removeFromCart }: any) => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const product = products.find((p: any) => p.id === Number(id));
+
+  if (!product) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-20 text-center">
+        <h2 className="text-2xl font-bold mb-4">Product not found</h2>
+        <Link to="/" className="text-[#0C831F] font-bold">Go back to shopping</Link>
+      </div>
+    );
+  }
+
+  const cartItem = cart.find((item: any) => item.id === product.id);
+
+  return (
+    <div className="bg-white min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 py-4">
+        {/* Breadcrumbs */}
+        <nav className="flex items-center gap-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-8">
+          <Link to="/" className="hover:text-black transition-colors">Home</Link>
+          <ChevronRight size={12} />
+          <span className="hover:text-black transition-colors cursor-pointer">{product.category}</span>
+          <ChevronRight size={12} />
+          <span className="text-gray-900 truncate max-w-[200px]">{product.name}</span>
+        </nav>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
+          {/* Left Column: Image */}
+          <div className="space-y-6">
+            <div className="relative aspect-square rounded-3xl overflow-hidden bg-gray-50 border border-gray-100 group">
+              <img 
+                src={product.image} 
+                alt={product.name}
+                className="w-full h-full object-contain p-8 group-hover:scale-105 transition-transform duration-500"
+                referrerPolicy="no-referrer"
+              />
+              <div className="absolute top-6 left-6 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-xl flex items-center gap-2 text-[10px] font-black shadow-sm border border-gray-100">
+                <Clock size={14} className="text-[#0C831F]" />
+                10 MINS DELIVERY
+              </div>
+            </div>
+            
+            {/* Simulated Thumbnails */}
+            <div className="flex gap-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className={cn(
+                  "w-20 h-20 rounded-2xl border-2 overflow-hidden cursor-pointer transition-all",
+                  i === 1 ? "border-[#0C831F]" : "border-gray-100 hover:border-gray-300"
+                )}>
+                  <img src={product.image} alt="" className="w-full h-full object-cover p-2" referrerPolicy="no-referrer" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right Column: Details */}
+          <div className="flex flex-col">
+            <div className="mb-8">
+              <h1 className="text-3xl font-black text-gray-900 mb-2 leading-tight">{product.name}</h1>
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-bold text-gray-500">1 unit</span>
+                <div className="h-1 w-1 rounded-full bg-gray-300" />
+                <span className="text-xs font-black text-[#0C831F] bg-green-50 px-2 py-0.5 rounded uppercase tracking-wider">In Stock</span>
+              </div>
+            </div>
+
+            <div className="bg-gray-50/50 p-8 rounded-[2rem] border border-gray-100 mb-8">
+              <div className="flex items-end justify-between mb-8">
+                <div>
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Price</p>
+                  <div className="flex items-center gap-3">
+                    <span className="text-4xl font-black">₹{product.price}</span>
+                    <span className="text-lg text-gray-400 line-through font-bold">₹{Math.round(product.price * 1.2)}</span>
+                    <span className="bg-[#0C831F] text-white text-[10px] font-black px-2 py-0.5 rounded">20% OFF</span>
+                  </div>
+                  <p className="text-[10px] text-gray-400 font-bold mt-1">(Inclusive of all taxes)</p>
+                </div>
+
+                {cartItem ? (
+                  <div className="flex items-center gap-6 bg-[#0C831F] text-white px-6 py-3 rounded-2xl shadow-xl shadow-[#0C831F]/20">
+                    <button onClick={() => removeFromCart(product.id)} className="hover:scale-110 transition-transform">
+                      <Minus size={20} />
+                    </button>
+                    <span className="font-black text-xl min-w-[20px] text-center">{cartItem.quantity}</span>
+                    <button onClick={() => addToCart(product)} className="hover:scale-110 transition-transform">
+                      <Plus size={20} />
+                    </button>
+                  </div>
+                ) : (
+                  <button 
+                    onClick={() => addToCart(product)}
+                    className="bg-[#0C831F] text-white px-12 py-4 rounded-2xl font-black shadow-xl shadow-[#0C831F]/20 hover:bg-[#096b19] transition-all"
+                  >
+                    ADD TO CART
+                  </button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-3 gap-4 pt-8 border-t border-gray-100">
+                <div className="text-center">
+                  <div className="bg-white w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2 shadow-sm border border-gray-50">
+                    <Clock size={18} className="text-[#0C831F]" />
+                  </div>
+                  <p className="text-[10px] font-black text-gray-800 uppercase leading-tight">10 Min<br/>Delivery</p>
+                </div>
+                <div className="text-center">
+                  <div className="bg-white w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2 shadow-sm border border-gray-50">
+                    <Sparkles size={18} className="text-[#0C831F]" />
+                  </div>
+                  <p className="text-[10px] font-black text-gray-800 uppercase leading-tight">Best<br/>Prices</p>
+                </div>
+                <div className="text-center">
+                  <div className="bg-white w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2 shadow-sm border border-gray-50">
+                    <CheckCircle2 size={18} className="text-[#0C831F]" />
+                  </div>
+                  <p className="text-[10px] font-black text-gray-800 uppercase leading-tight">Quality<br/>Assurance</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-8">
+              <div>
+                <h3 className="text-lg font-black mb-4">Product Details</h3>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Description</p>
+                    <p className="text-sm text-gray-600 font-medium leading-relaxed">
+                      {product.description || "Experience the freshest quality with our handpicked selection. Delivered directly to your doorstep in minutes. Perfect for your daily needs."}
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-8">
+                    <div>
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Shelf Life</p>
+                      <p className="text-sm text-gray-800 font-bold">2 Days</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Unit</p>
+                      <p className="text-sm text-gray-800 font-bold">1 unit</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-6 bg-blue-50/50 rounded-3xl border border-blue-100/50">
+                <h4 className="text-xs font-black text-blue-900 uppercase tracking-widest mb-2">Manufacturer Details</h4>
+                <p className="text-[11px] text-blue-800/70 font-medium leading-relaxed">
+                  FreshCart Retail Private Limited, Sector 45, Gurgaon, Haryana - 122003. FSSAI Lic No. 10012345678901
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const AddressModal = ({ isOpen, onClose, currentAddress, onSave }: { isOpen: boolean, onClose: () => void, currentAddress: string, onSave: (addr: string) => void }) => {
   const [address, setAddress] = useState(currentAddress);
 
@@ -404,24 +563,6 @@ const UserDropdown = ({ user, onLogout, onClose }: { user: UserData, onLogout: (
         >
           Log Out
         </button>
-      </div>
-
-      <div className="bg-gray-50 -mx-6 -mb-6 p-6 flex items-center gap-4">
-        <div className="bg-white p-2 rounded-xl shadow-sm border border-gray-100">
-          <img 
-            src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://blinkit.com" 
-            alt="QR Code" 
-            className="w-16 h-16"
-          />
-        </div>
-        <div className="flex-1">
-          <p className="text-[13px] font-black leading-tight text-gray-800">
-            Simple way to get groceries <span className="text-blue-500">at your doorstep</span>
-          </p>
-          <p className="text-[10px] text-gray-500 mt-1 font-medium">
-            Scan the QR code and download blinkit app
-          </p>
-        </div>
       </div>
     </motion.div>
   );
@@ -536,6 +677,7 @@ const HomePage = ({
   addToCart, 
   removeFromCart 
 }: any) => {
+  const navigate = useNavigate();
   const filteredProducts = useMemo(() => {
     return products.filter((p: any) => {
       const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -549,20 +691,82 @@ const HomePage = ({
 
   return (
     <main className="max-w-7xl mx-auto px-4 py-8">
-      {/* Banner Section */}
-      <div className="mb-12 rounded-3xl overflow-hidden relative h-64 bg-[#F8FFFB] border border-[#0C831F]/10">
-        <div className="absolute inset-0 p-12 flex flex-col justify-center">
-          <span className="text-[#0C831F] font-bold text-sm uppercase tracking-widest mb-2">Exclusive Offer</span>
-          <h2 className="text-4xl font-black mb-4 leading-tight">Fresh Groceries<br/>Delivered in <span className="text-[#0C831F]">10 Mins</span></h2>
-          <p className="text-gray-600 mb-6 max-w-md">Get up to 50% off on your first order. Use code: FRESH50</p>
-          <button className="bg-black text-white px-8 py-3 rounded-full font-bold w-fit hover:scale-105 transition-transform">Shop Now</button>
+      {/* Hero Banner Section */}
+      <div className="mb-8 rounded-[2rem] overflow-hidden relative h-[320px] bg-[#2D5A27] shadow-xl">
+        <div className="absolute inset-0 p-12 flex flex-col justify-center z-10">
+          <h2 className="text-5xl font-black text-white mb-4 leading-tight tracking-tight">
+            Stock up on<br/>daily essentials
+          </h2>
+          <p className="text-white/90 text-lg mb-8 max-w-lg font-medium">
+            Get farm-fresh goodness & a range of exotic<br/>fruits, vegetables, eggs & more
+          </p>
+          <button className="bg-white text-black px-10 py-3.5 rounded-xl font-black w-fit hover:scale-105 transition-all shadow-lg">
+            Shop Now
+          </button>
         </div>
-        <img 
-          src="https://picsum.photos/seed/grocery/800/400" 
-          alt="Banner" 
-          className="absolute right-0 top-0 h-full w-1/2 object-cover opacity-80"
-          referrerPolicy="no-referrer"
-        />
+        <div className="absolute right-0 top-0 h-full w-3/5">
+          <img 
+            src="https://picsum.photos/seed/fresh-produce/1000/600" 
+            alt="Fresh Produce" 
+            className="h-full w-full object-cover"
+            referrerPolicy="no-referrer"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#2D5A27] via-[#2D5A27]/40 to-transparent" />
+        </div>
+      </div>
+
+      {/* Offer Banners Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        {/* Pharmacy Card */}
+        <div className="bg-[#00B2B2] rounded-[2rem] p-8 relative overflow-hidden h-64 group cursor-pointer">
+          <div className="relative z-10 flex flex-col h-full">
+            <h3 className="text-2xl font-black text-white mb-2 leading-tight">Pharmacy at<br/>your doorstep!</h3>
+            <p className="text-white/80 text-sm font-bold mb-6">Cough syrups, pain<br/>relief sprays & more</p>
+            <button className="mt-auto bg-white text-black px-6 py-2.5 rounded-xl font-black text-sm w-fit shadow-md">
+              Order Now
+            </button>
+          </div>
+          <img 
+            src="https://picsum.photos/seed/pharmacy/300/300" 
+            alt="Pharmacy" 
+            className="absolute right-[-20px] bottom-[-20px] w-48 h-48 object-contain opacity-90 group-hover:scale-110 transition-transform duration-500"
+            referrerPolicy="no-referrer"
+          />
+        </div>
+
+        {/* Pet Care Card */}
+        <div className="bg-[#FFC107] rounded-[2rem] p-8 relative overflow-hidden h-64 group cursor-pointer">
+          <div className="relative z-10 flex flex-col h-full">
+            <h3 className="text-2xl font-black text-gray-900 mb-2 leading-tight">Pet care supplies<br/>at your door</h3>
+            <p className="text-gray-800/70 text-sm font-bold mb-6">Food, treats,<br/>toys & more</p>
+            <button className="mt-auto bg-gray-900 text-white px-6 py-2.5 rounded-xl font-black text-sm w-fit shadow-md">
+              Order Now
+            </button>
+          </div>
+          <img 
+            src="https://picsum.photos/seed/petcare/300/300" 
+            alt="Pet Care" 
+            className="absolute right-[-10px] bottom-[-10px] w-44 h-44 object-contain group-hover:scale-110 transition-transform duration-500"
+            referrerPolicy="no-referrer"
+          />
+        </div>
+
+        {/* Baby Care Card */}
+        <div className="bg-[#D1E8FF] rounded-[2rem] p-8 relative overflow-hidden h-64 group cursor-pointer">
+          <div className="relative z-10 flex flex-col h-full">
+            <h3 className="text-2xl font-black text-gray-900 mb-2 leading-tight">No time for<br/>a diaper run?</h3>
+            <p className="text-gray-700/70 text-sm font-bold mb-6">Get baby care<br/>essentials</p>
+            <button className="mt-auto bg-gray-800 text-white px-6 py-2.5 rounded-xl font-black text-sm w-fit shadow-md">
+              Order Now
+            </button>
+          </div>
+          <img 
+            src="https://picsum.photos/seed/babycare/300/300" 
+            alt="Baby Care" 
+            className="absolute right-[-10px] bottom-[-10px] w-44 h-44 object-contain group-hover:scale-110 transition-transform duration-500"
+            referrerPolicy="no-referrer"
+          />
+        </div>
       </div>
 
       {/* Categories */}
@@ -600,7 +804,8 @@ const HomePage = ({
             <motion.div 
               layout
               key={product.id}
-              className="group bg-white rounded-2xl p-4 border border-gray-100 hover:border-[#0C831F]/30 hover:shadow-xl hover:shadow-[#0C831F]/5 transition-all relative"
+              className="group bg-white rounded-2xl p-4 border border-gray-100 hover:border-[#0C831F]/30 hover:shadow-xl hover:shadow-[#0C831F]/5 transition-all relative cursor-pointer"
+              onClick={() => navigate(`/product/${product.id}`)}
             >
               <div className="relative aspect-square mb-4 overflow-hidden rounded-xl bg-gray-50">
                 <img 
@@ -609,7 +814,13 @@ const HomePage = ({
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   referrerPolicy="no-referrer"
                 />
-                <button className="absolute top-2 right-2 p-2 bg-white/80 backdrop-blur-sm rounded-full text-gray-400 hover:text-red-500 transition-colors">
+                <button 
+                  className="absolute top-2 right-2 p-2 bg-white/80 backdrop-blur-sm rounded-full text-gray-400 hover:text-red-500 transition-colors z-10"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // Handle wishlist
+                  }}
+                >
                   <Heart size={18} />
                 </button>
                 <div className="absolute bottom-2 left-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md flex items-center gap-1 text-[10px] font-bold">
@@ -625,15 +836,21 @@ const HomePage = ({
               <div className="flex items-center justify-between mt-auto">
                 <span className="font-black text-lg">₹{product.price}</span>
                 {cart.find((item: any) => item.id === product.id) ? (
-                  <div className="flex items-center gap-3 bg-[#0C831F] text-white px-2 py-1.5 rounded-lg">
+                  <div 
+                    className="flex items-center gap-3 bg-[#0C831F] text-white px-2 py-1.5 rounded-lg z-10"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <button onClick={() => removeFromCart(product.id)}><Minus size={16}/></button>
                     <span className="font-bold text-sm">{cart.find((item: any) => item.id === product.id)?.quantity}</span>
                     <button onClick={() => addToCart(product)}><Plus size={16}/></button>
                   </div>
                 ) : (
                   <button 
-                    onClick={() => addToCart(product)}
-                    className="border border-[#0C831F] text-[#0C831F] px-4 py-1.5 rounded-lg font-bold text-sm hover:bg-[#0C831F] hover:text-white transition-all"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addToCart(product);
+                    }}
+                    className="border border-[#0C831F] text-[#0C831F] px-4 py-1.5 rounded-lg font-bold text-sm hover:bg-[#0C831F] hover:text-white transition-all z-10"
                   >
                     ADD
                   </button>
@@ -867,6 +1084,91 @@ const SuccessPage = () => {
   );
 };
 
+const Footer = () => {
+  return (
+    <footer className="bg-white border-t border-gray-100 pt-16 pb-24 lg:pb-16 mt-20">
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+          <div className="space-y-6">
+            <h1 className="text-2xl font-black text-[#0C831F] tracking-tighter italic">FreshCart</h1>
+            <p className="text-gray-500 text-sm leading-relaxed font-medium">
+              Fresh groceries delivered to your doorstep in 10 minutes. Experience the fastest delivery service in India.
+            </p>
+            <div className="flex gap-4">
+              {['facebook', 'twitter', 'instagram', 'linkedin'].map(social => (
+                <div key={social} className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 hover:bg-[#0C831F] hover:text-white transition-all cursor-pointer">
+                  <Sparkles size={14} />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h4 className="font-black text-sm uppercase tracking-widest mb-6">Useful Links</h4>
+            <ul className="space-y-4">
+              {[
+                { label: 'About Us', path: '/' },
+                { label: 'Privacy Policy', path: '/privacy' },
+                { label: 'Terms & Conditions', path: '/' },
+                { label: "FAQ's", path: '/faqs' },
+                { label: 'Contact Us', path: '/' },
+              ].map(link => (
+                <li key={link.label}>
+                  <Link to={link.path} className="text-gray-500 text-sm font-medium hover:text-[#0C831F] transition-colors">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-black text-sm uppercase tracking-widest mb-6">Categories</h4>
+            <ul className="space-y-4">
+              {['Dairy, Bread & Eggs', 'Snacks & Munchies', 'Fruits & Vegetables', 'Cold Drinks & Juices', 'Breakfast & Instant Food'].map(cat => (
+                <li key={cat}>
+                  <Link to="/" className="text-gray-500 text-sm font-medium hover:text-[#0C831F] transition-colors">
+                    {cat}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-black text-sm uppercase tracking-widest mb-6">Account</h4>
+            <ul className="space-y-4">
+              {[
+                { label: 'My Profile', path: '/auth' },
+                { label: 'My Orders', path: '/orders' },
+                { label: 'Saved Addresses', path: '/addresses' },
+                { label: 'My Prescriptions', path: '/prescriptions' },
+              ].map(link => (
+                <li key={link.label}>
+                  <Link to={link.path} className="text-gray-500 text-sm font-medium hover:text-[#0C831F] transition-colors">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="pt-8 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">
+            © 2026 FreshCart Retail Private Limited
+          </p>
+          <div className="flex items-center gap-6">
+            <img src="https://blinkit.com/images/payment/visa.png" alt="Visa" className="h-4 opacity-50 grayscale hover:grayscale-0 transition-all" />
+            <img src="https://blinkit.com/images/payment/mastercard.png" alt="Mastercard" className="h-4 opacity-50 grayscale hover:grayscale-0 transition-all" />
+            <img src="https://blinkit.com/images/payment/upi.png" alt="UPI" className="h-4 opacity-50 grayscale hover:grayscale-0 transition-all" />
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+};
+
 // --- Main App ---
 
 export default function App() {
@@ -995,6 +1297,14 @@ export default function App() {
         <Route path="/prescriptions" element={<MyPrescriptionsPage />} />
         <Route path="/faqs" element={<FAQsPage />} />
         <Route path="/privacy" element={<AccountPrivacyPage />} />
+        <Route path="/product/:id" element={
+          <ProductDetailPage 
+            products={products}
+            cart={cart}
+            addToCart={addToCart}
+            removeFromCart={removeFromCart}
+          />
+        } />
         <Route path="/checkout" element={
           <CheckoutPage 
             cart={cart} 
@@ -1007,6 +1317,8 @@ export default function App() {
         } />
         <Route path="/success" element={<SuccessPage />} />
       </Routes>
+
+      <Footer />
 
       {/* Cart Sidebar */}
       <AnimatePresence>
