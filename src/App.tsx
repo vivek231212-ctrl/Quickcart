@@ -533,8 +533,10 @@ const UserDropdown = ({ user, onLogout, onClose }: { user: UserData, onLogout: (
       className="absolute right-0 top-full mt-2 w-72 bg-white rounded-[2rem] shadow-2xl border border-gray-100 overflow-hidden z-50 p-6"
     >
       <div className="mb-6">
-        <h3 className="text-xl font-black text-gray-800">My Account</h3>
-        <p className="text-sm text-gray-500 font-medium">{user.email}</p>
+        <Link to="/account" onClick={onClose} className="group">
+          <h3 className="text-xl font-black text-gray-800 group-hover:text-[#0C831F] transition-colors">My Account</h3>
+          <p className="text-sm text-gray-500 font-medium">{user.email}</p>
+        </Link>
       </div>
 
       <div className="space-y-5 mb-8">
@@ -1059,6 +1061,69 @@ const CheckoutPage = ({ cart, cartTotal, onOrderSuccess, user, address, onChange
   );
 };
 
+const MyAccountPage = ({ user, onLogout }: { user: UserData | null, onLogout: () => void }) => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/auth');
+    }
+  }, [user, navigate]);
+
+  if (!user) return null;
+
+  const menuItems = [
+    { label: 'My Orders', path: '/orders', icon: <Truck size={24} />, description: 'Check your order status and history' },
+    { label: 'Saved Addresses', path: '/addresses', icon: <MapPin size={24} />, description: 'Manage your delivery addresses' },
+    { label: 'My Prescriptions', path: '/prescriptions', icon: <Sparkles size={24} />, description: 'View and upload prescriptions' },
+    { label: "FAQ's", path: '/faqs', icon: <Sparkles size={24} />, description: 'Get help with your queries' },
+    { label: 'Account Privacy', path: '/privacy', icon: <Sparkles size={24} />, description: 'Manage your data and privacy' },
+  ];
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-8 md:py-12">
+      <div className="bg-white rounded-[2.5rem] md:rounded-[3rem] p-6 md:p-10 shadow-sm border border-gray-100 mb-8">
+        <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
+          <div className="w-24 h-24 bg-[#0C831F]/10 rounded-full flex items-center justify-center text-[#0C831F]">
+            <User size={48} />
+          </div>
+          <div className="flex-1">
+            <h2 className="text-2xl md:text-3xl font-black mb-1">{user.name}</h2>
+            <p className="text-gray-500 font-medium mb-4">{user.email}</p>
+            <button 
+              onClick={onLogout}
+              className="text-red-500 font-bold text-sm hover:underline"
+            >
+              Log Out
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+        {menuItems.map((item) => (
+          <Link 
+            key={item.label}
+            to={item.path}
+            className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm hover:border-[#0C831F]/30 hover:shadow-md transition-all group"
+          >
+            <div className="flex items-center gap-4">
+              <div className="bg-gray-50 p-3 rounded-2xl text-gray-400 group-hover:bg-[#0C831F]/10 group-hover:text-[#0C831F] transition-colors">
+                {item.icon}
+              </div>
+              <div className="flex-1">
+                <h4 className="font-black text-lg">{item.label}</h4>
+                <p className="text-xs text-gray-500 font-medium">{item.description}</p>
+              </div>
+              <ChevronRight size={20} className="text-gray-300 group-hover:text-[#0C831F] transition-colors" />
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const SuccessPage = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 py-12 md:py-20 flex flex-col items-center justify-center text-center">
@@ -1156,7 +1221,7 @@ const Footer = () => {
             <h4 className="font-black text-sm uppercase tracking-widest mb-6">Account</h4>
             <ul className="space-y-4">
               {[
-                { label: 'My Profile', path: '/auth' },
+                { label: 'My Profile', path: '/account' },
                 { label: 'My Orders', path: '/orders' },
                 { label: 'Saved Addresses', path: '/addresses' },
                 { label: 'My Prescriptions', path: '/prescriptions' },
@@ -1309,6 +1374,7 @@ export default function App() {
           />
         } />
         <Route path="/auth" element={<AuthPage onAuthSuccess={handleAuthSuccess} />} />
+        <Route path="/account" element={<MyAccountPage user={user} onLogout={handleLogout} />} />
         <Route path="/orders" element={<MyOrdersPage user={user} />} />
         <Route path="/addresses" element={<SavedAddressesPage />} />
         <Route path="/prescriptions" element={<MyPrescriptionsPage />} />
