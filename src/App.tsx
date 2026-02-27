@@ -451,14 +451,6 @@ const Header = ({
           <h1 className="text-2xl font-black text-[#0C831F] tracking-tighter italic">FreshCart</h1>
         </Link>
 
-        <div className="hidden md:flex flex-col border-r border-gray-200 pr-8 cursor-pointer group">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 group-hover:text-[#0C831F]">Delivery in 10 mins</span>
-          <div className="flex items-center gap-1">
-            <span className="font-bold text-sm">Home - New Delhi, India</span>
-            <ChevronDown size={14} className="text-gray-400" />
-          </div>
-        </div>
-
         <div className="flex-1 relative">
           <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
             <Search size={20} />
